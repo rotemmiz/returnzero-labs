@@ -102,6 +102,10 @@ android17-memory-lab/
 
 ```bash
 # Experiment 1: multi-process limiter
+# (one-time) enable the limiter on the emulator:
+emulator -avd rz-api37 -writable-system
+limiter-experiment/setup-emulator.sh
+
 cd limiter-app && ./gradlew :app:assembleDebug && adb install -r app/build/outputs/apk/debug/app-debug.apk
 cd ../limiter-experiment && ./run.sh
 

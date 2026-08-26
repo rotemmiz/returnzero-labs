@@ -45,49 +45,25 @@ RAM emulator, limiter config visible 2048 MB / not-visible 1024 MB, manual cap
 
 The emulator's `/vendor` partition ships without
 `/vendor/etc/memory-limiter-config.xml`, so `am memory-limiter status` reports
-`disabled` on a fresh image. To enable it:
+`disabled` on a fresh image. The setup script automates the whole process:
 
-1. Boot the emulator with a writable system/vendor overlay:
+```bash
+# Boot the emulator with a writable system overlay first:
+emulator -avd rz-api37 -writable-system
 
-   ```bash
-   emulator -avd rz-api37 -no-window -writable-system
-   ```
+# Then run the setup script:
+limiter-experiment/setup-emulator.sh
+```
 
-2. Disable verity and reboot (the overlay mounts on the next boot):
+The script:
+1. Verifies the device is API 37 and `adb root` works.
+2. Disables verity and reboots (the overlay mounts on the next boot).
+3. Pushes `memory-limiter-config.xml` to the vendor overlay upper dir.
+4. Reboots so `system_server` reads the config at boot.
+5. Verifies the limiter is enabled (`am memory-limiter status`).
 
-   ```bash
-   adb root
-   adb disable-verity
-   adb reboot
-   ```
-
-3. After the reboot settles, write the config to the vendor overlay upper dir
-   (the `/vendor` mount stays read-only, but the overlay upper dir is writable
-   and is served over `/vendor`):
-
-   ```bash
-   adb root
-   adb push limiter-experiment/memory-limiter-config.xml /data/local/tmp/mlc.xml
-   adb shell "su 0 mkdir -p /mnt/scratch/overlay/vendor/upper/etc && \
-             su 0 cp /data/local/tmp/mlc.xml \
-                    /mnt/scratch/overlay/vendor/upper/etc/memory-limiter-config.xml"
-   ```
-
-4. Reboot again so `system_server` reads the config at boot:
-
-   ```bash
-   adb reboot
-   ```
-
-5. Verify the limiter is enabled:
-
-   ```bash
-   adb shell am memory-limiter status
-   # expect:
-   # Memory limiter
-   #   enabled   limits=true  monitoring=true  killing=true  ignored=none
-   #   visibleMem=2048MB ...
-   ```
+Pass a device serial if multiple are attached:
+`limiter-experiment/setup-emulator.sh emulator-5554`.
 
 The config file (`memory-limiter-config.xml` in this directory) sets a single
 limit set with `memVisible=2048 MB`, `memNotVisible=1024 MB`, `swapVisible=1024
