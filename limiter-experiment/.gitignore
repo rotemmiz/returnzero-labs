@@ -1,0 +1,3 @@
+# Experiment runs are reproducible via run.sh; keep them out of git.
+# The committed canonical run (20260825T235154Z) is force-added for audit.
+results/

@@ -1,0 +1,5 @@
+# Benchmark runs and build artifacts are reproducible; keep them out of git.
+# The committed canonical run is force-added for audit (text files only).
+results/
+build/
+raw/*/dex/

@@ -1,0 +1,23 @@
+# Android
+*.apk
+*.aab
+*.dex
+*.oat
+*.odex
+*.art
+local.properties
+build/
+.cxx/
+.gradle/
+*.iml
+.idea/
+
+# Gradle
+.gradle/
+gradle/build/
+
+# Results build artifacts
+r8-benchmark/build/
+
+# OS
+.DS_Store

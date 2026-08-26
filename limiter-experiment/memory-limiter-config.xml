@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MemoryLimiterConfig>
+    <version>1</version>
+    <configList>
+        <limitSet>
+            <minimumRequiredMemTotal>0</minimumRequiredMemTotal>
+            <memVisible>2048</memVisible>
+            <memNotVisible>1024</memNotVisible>
+            <swapVisible>1024</swapVisible>
+            <swapNotVisible>1024</swapNotVisible>
+        </limitSet>
+    </configList>
+</MemoryLimiterConfig>
