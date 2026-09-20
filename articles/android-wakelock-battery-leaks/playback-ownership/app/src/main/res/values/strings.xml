@@ -1,0 +1,6 @@
+<resources>
+    <string name="status_service">C: Service owns audio. Home keeps it playing; Stop all ends it.</string>
+    <string name="status_playing">%1$s: Playing locally. Press Home or Hide feed.</string>
+    <string name="status_left">%1$s: Feed left (%2$s). Stop all ends remaining work.</string>
+    <string name="status_stopped">Stopped. All local owners released; service stop requested.</string>
+</resources>

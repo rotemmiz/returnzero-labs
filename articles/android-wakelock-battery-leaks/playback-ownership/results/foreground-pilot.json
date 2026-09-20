@@ -1,0 +1,30 @@
+{
+  "run_id": "20260920T191332Z-6a7c0b63",
+  "scenario": "foreground",
+  "device": "Pixel 9 Pro XL",
+  "android": 17,
+  "build": "CP2A.260805.005",
+  "apk_sha256": "4c772711527f0c669dd542d5c945119d1bd1d12b565075ec6ea797d3e6f42452",
+  "players_created": 1,
+  "release_completions": 1,
+  "on_stop_to_release_ms": 73.893352,
+  "trace_bytes": 5530426,
+  "matched_app_markers": 16,
+  "marker_delay_ms_min": 0.033122,
+  "marker_delay_ms_max": 1.620687,
+  "trace_clock_id": 6,
+  "nonzero_parser_or_data_loss_stats": 0,
+  "ftrace_setup_notices": 2,
+  "audio_track_evidence": "active at play-end; removal recorded and sample idle at observe-end",
+  "audiomix_partial_cumulative_ms": {
+    "baseline_end": 17,
+    "play_end": 17,
+    "observe_end": 27,
+    "cleanup_end": 27
+  },
+  "limits": [
+    "Single short foreground pilot; no matched screen-off baseline or repeated comparison.",
+    "Two ftrace setup notices; wakeup-source event support not established.",
+    "No battery savings, suspend residency, or X reproduction established."
+  ]
+}
