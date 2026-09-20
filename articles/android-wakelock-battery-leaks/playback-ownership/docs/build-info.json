@@ -1,0 +1,11 @@
+{
+  "agp": "8.11.1",
+  "kotlin": "2.2.10",
+  "gradle": "8.13",
+  "media3": "1.11.1",
+  "jdk": 17,
+  "min_sdk": 26,
+  "compile_sdk": 36,
+  "target_sdk": 36,
+  "media_sha256": "d4653ef9bc1d9213b98c9631c929b1dbc1de5b52dbd78ea81ced3a7e6c22fab3"
+}

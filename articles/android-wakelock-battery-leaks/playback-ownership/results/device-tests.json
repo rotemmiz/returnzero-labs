@@ -1,0 +1,40 @@
+{
+  "date": "2026-09-20",
+  "device": "Pixel 9 Pro XL",
+  "android": 17,
+  "build": "CP2A.260805.005",
+  "tests": [
+    {
+      "name": "poolEvictsThenClosesAllRemainingPlayers",
+      "passed": true,
+      "seconds": 45.643
+    },
+    {
+      "name": "foregroundExitReleasesEveryCreatedPlayer",
+      "passed": true,
+      "seconds": 40.697
+    },
+    {
+      "name": "lateEventsKeepTheirOriginalRunAfterScenarioSwitch",
+      "passed": true,
+      "seconds": 0.961
+    },
+    {
+      "name": "terminalMediaErrorClosesOwner",
+      "passed": true,
+      "seconds": 0.676
+    },
+    {
+      "name": "pausedRetentionKeepsPlayerUntilOwnerDestroyed",
+      "passed": true,
+      "seconds": 46.217
+    },
+    {
+      "name": "lateCallbackCannotRestartStoppedOwner",
+      "passed": true,
+      "seconds": 46.717
+    }
+  ],
+  "apk_sha256": "4c772711527f0c669dd542d5c945119d1bd1d12b565075ec6ea797d3e6f42452",
+  "interpretation": "App ownership assertions only; not proof of kernel wake blocker release or battery savings."
+}

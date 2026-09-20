@@ -1,0 +1,24 @@
+--- a/checkinparse/checkin_parse.go
++++ b/checkinparse/checkin_parse.go
+@@ -1979,6 +1979,21 @@
+ //
+ // format: <idle_time>, <rx_time>, <power_ma_ms>, tx_time...
+ func parseControllerData(pc checkinutil.Counter, section string, record []string) (*bspb.BatteryStats_ControllerActivity, error) {
++	// Compatibility workaround: retain integer inputs and round fractional
++	// controller values to the legacy integer representation. This does not
++	// validate newer Android controller field layouts or their units.
++	normalized := append([]string(nil), record...)
++	for i, value := range normalized {
++		if _, err := strconv.ParseInt(value, 10, 64); err == nil {
++			continue
++		}
++		v, err := strconv.ParseFloat(value, 64)
++		if err != nil || math.IsNaN(v) || math.IsInf(v, 0) || v < 0 || math.Round(v) >= 1<<63 {
++			return nil, fmt.Errorf("%s contained invalid controller value: %q", section, value)
++		}
++		normalized[i] = strconv.FormatInt(int64(math.Round(v)), 10)
++	}
++	record = normalized
+ 	var idle, rx, pwr int64
+ 	rem, err := parseSlice(pc, section, record, &idle, &rx, &pwr)
+ 	if err != nil {

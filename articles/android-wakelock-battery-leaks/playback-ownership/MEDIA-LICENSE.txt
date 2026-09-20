@@ -1,0 +1,1 @@
+The adjacent sample.mp4 is an original synthetic test pattern and sine tone generated with FFmpeg lavfi for this sample. It contains no third-party recordings. Dedicated to the public domain under CC0 1.0: https://creativecommons.org/publicdomain/zero/1.0/ . Generation command and SHA-256 are in README.md.
