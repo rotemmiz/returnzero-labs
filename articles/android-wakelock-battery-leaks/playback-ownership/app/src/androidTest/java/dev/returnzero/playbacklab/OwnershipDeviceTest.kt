@@ -109,4 +109,16 @@ class OwnershipDeviceTest {
         awaitEvent(newRun, "release_end")
     }
 
+    @Test fun explicitDebugStopReleasesRetainedOwner() {
+        val (run, screen) = launch("retained")
+        screen.use {
+            awaitEvent(run, "player_created")
+            screen.moveToState(Lifecycle.State.CREATED)
+            context.sendBroadcast(Intent("dev.returnzero.playbacklab.STOP").setClassName(context, "dev.returnzero.playbacklab.StopReceiver"))
+            awaitEvent(run, "stop_command_received")
+            awaitEvent(run, "run_stop")
+            assertEquals(createdIds(run), releasedIds(run))
+        }
+    }
+
 }

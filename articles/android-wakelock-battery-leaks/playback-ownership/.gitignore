@@ -1,6 +1,5 @@
-.gradle/
-.kotlin/
-**/build/
-local.properties
-captures/
-*.hprof
+__pycache__/
+*.pyc
+*.pftrace
+*.mp4.tmp
+bugreport*.zip

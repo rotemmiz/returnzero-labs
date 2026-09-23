@@ -17,6 +17,9 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 
 class MainActivity : Activity() {
+    companion object {
+        internal var current = java.lang.ref.WeakReference<MainActivity>(null)
+    }
     private val handler = Handler(Looper.getMainLooper())
     private val gate = OwnershipGate()
     private lateinit var playerView: PlayerView
@@ -30,6 +33,7 @@ class MainActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        current = java.lang.ref.WeakReference(this)
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(32, 48, 32, 48)
@@ -150,7 +154,7 @@ class MainActivity : Activity() {
         player = null
     }
 
-    private fun stopAll() {
+    internal fun stopAll() {
         gate.leave()
         handler.removeCallbacksAndMessages(null)
         if (::playerView.isInitialized) releaseLocal()
@@ -162,6 +166,7 @@ class MainActivity : Activity() {
 
     override fun onStop() { leavePlayback("onStop"); super.onStop() }
     override fun onDestroy() {
+        if (current.get() === this) current.clear()
         gate.leave()
         handler.removeCallbacksAndMessages(null)
         releaseLocal()

@@ -4,6 +4,10 @@ A runnable Android / Media3 prevention example for the returnzero article “The
 
 This app compares **ownership policies**, not commercial app implementations. Deliberately continuing playback after detaching a view is a synthetic mistake. A paused player may release audio wakefulness while remaining allocated. Measure each case; neither case is a claimed reproduction of X.
 
+## Google issue reproduction
+
+The [issue 565052666 package](docs/issue-565052666/README.md) adds controlled AudioMix comparisons, an isolated direct-lock app, and private evidence collection. The playback app below remains free of direct wake-lock acquisition.
+
 ## Build
 
 Requirements: JDK 17, Android SDK platform 36 and its build tools, adb, Python 3 for capture tools. All Media3 modules are pinned to 1.11.1; AGP is 8.11.1, Kotlin 2.2.10, Gradle 8.13. Minimum Android API is 26; target is 36.
