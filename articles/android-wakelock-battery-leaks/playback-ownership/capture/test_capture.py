@@ -110,6 +110,51 @@ class CaptureTests(unittest.TestCase):
                     runner.validate_started()
             self.assertFalse(runner.manifest['start_verified'])
 
+    def test_pre_home_stopped_playback_is_not_valid_start(self):
+        for terminal in [
+            {'event': 'is_playing', 'is_playing': False, 'player_id': 'p1'},
+            {'event': 'release_start', 'player_id': 'p1'},
+            {'event': 'release_end', 'player_id': 'p1'},
+            {'event': 'run_stop'},
+            {'event': 'experiment_deadline'},
+        ]:
+            with self.subTest(terminal=terminal), tempfile.TemporaryDirectory() as root:
+                runner = self.make_capture(root)
+                events = [{'event': 'run_start'},
+                          {'event': 'is_playing', 'is_playing': True, 'player_id': 'p1'}, terminal]
+                data = '\n'.join(json.dumps(dict(event, run_id=runner.run_id)) for event in events)
+                with patch.object(runner, 'adb', return_value=data):
+                    with self.assertRaisesRegex(RuntimeError, 'inactive'):
+                        runner.validate_started()
+                self.assertFalse(runner.manifest['start_verified'])
+
+    def test_pre_home_released_or_timed_out_lock_is_not_valid_start(self):
+        for terminal in [
+            {'event': 'wake_lock_release', 'is_held': False},
+            {'event': 'wake_lock_timeout_observed', 'is_held': False},
+            {'event': 'run_stop'},
+            {'event': 'experiment_deadline'},
+        ]:
+            with self.subTest(terminal=terminal), tempfile.TemporaryDirectory() as root:
+                runner = self.make_capture(root, 'direct-timed')
+                events = [{'event': 'run_start'}, {'event': 'wake_lock_acquired', 'is_held': True}, terminal]
+                data = '\n'.join(json.dumps(dict(event, run_id=runner.run_id)) for event in events)
+                with patch.object(runner, 'adb', return_value=data):
+                    with self.assertRaisesRegex(RuntimeError, 'inactive'):
+                        runner.validate_started()
+                self.assertFalse(runner.manifest['start_verified'])
+
+    def test_reacquired_lock_after_release_is_current_active_state(self):
+        with tempfile.TemporaryDirectory() as root:
+            runner = self.make_capture(root, 'direct-untimed')
+            events = [{'event': 'run_start'}, {'event': 'wake_lock_acquired', 'is_held': True},
+                      {'event': 'wake_lock_release', 'is_held': False},
+                      {'event': 'wake_lock_acquired', 'is_held': True}]
+            data = '\n'.join(json.dumps(dict(event, run_id=runner.run_id)) for event in events)
+            with patch.object(runner, 'adb', return_value=data):
+                runner.validate_started()
+            self.assertTrue(runner.manifest['start_verified'])
+
     def test_supplied_apk_must_match_installed_bytes(self):
         with tempfile.TemporaryDirectory() as root:
             apk = Path(root) / 'sample.apk'

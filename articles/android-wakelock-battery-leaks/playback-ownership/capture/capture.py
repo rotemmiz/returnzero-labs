@@ -195,14 +195,34 @@ class Capture:
             except json.JSONDecodeError:
                 pass
         run_started = any(event.get('event') == 'run_start' for event in events)
-        if self.args.scenario.startswith('direct-'):
-            active = any(event.get('event') == 'wake_lock_acquired' and event.get('is_held') is True for event in events)
-        else:
-            active = any(event.get('event') == 'is_playing' and event.get('is_playing') is True for event in events)
-        self.manifest['start_verified'] = bool(run_started and active)
+        active = False
+        active_player = None
+        deadline_seen = False
+        # File order is event append order. A historical acquisition/play event
+        # cannot validate a run which already stopped before Home.
+        for event in events:
+            kind = event.get('event')
+            if kind == 'experiment_deadline':
+                deadline_seen = True
+            if kind in ('run_start', 'run_stop', 'experiment_deadline'):
+                active = False
+            if self.args.scenario.startswith('direct-'):
+                if kind == 'wake_lock_acquired':
+                    active = event.get('is_held') is True
+                elif kind == 'wake_lock_release':
+                    active = False
+                elif kind == 'wake_lock_timeout_observed' and event.get('is_held') is not True:
+                    active = False
+            else:
+                if kind == 'is_playing':
+                    active = event.get('is_playing') is True
+                    active_player = event.get('player_id')
+                elif kind in ('release_start', 'release_end') and event.get('player_id') == active_player:
+                    active = False
+        self.manifest['start_verified'] = bool(run_started and active and not deadline_seen)
         self.save()
         if not self.manifest['start_verified']:
-            raise RuntimeError('Current-run startup events missing: cannot establish playback/lock acquisition before Home')
+            raise RuntimeError('Current-run startup events missing or inactive: cannot establish active playback/lock acquisition before Home')
 
     def provenance(self):
         checkout = Path(__file__).resolve().parents[1]
