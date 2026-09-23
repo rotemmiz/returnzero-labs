@@ -19,6 +19,21 @@ def trial_order(rounds):
             for scenario in SCENARIOS[repetition % len(SCENARIOS):] + SCENARIOS[:repetition % len(SCENARIOS)]]
 
 
+def checkpoint_state(checkpoint, identity):
+    if checkpoint.exists():
+        state = json.loads(checkpoint.read_text())
+        if any(state.get(key) != value for key, value in identity.items()):
+            raise ValueError('Existing matrix has different source, rounds, device, or APKs; use a new output directory')
+        return state
+    return {**identity, 'attempts': [], 'protocol': {'play_seconds': 30, 'observe_seconds': 180}}
+
+
+def save_checkpoint(checkpoint, state):
+    temporary = checkpoint.with_suffix('.tmp')
+    temporary.write_text(json.dumps(state, indent=2) + '\n')
+    temporary.replace(checkpoint)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--serial', required=True)
@@ -34,15 +49,18 @@ def main():
     output.mkdir(parents=True, exist_ok=True, mode=0o700)
     checkpoint = output / 'matrix.json'
     order = trial_order(args.rounds)
-    if checkpoint.exists():
-        state = json.loads(checkpoint.read_text())
-        if state['source_commit'] != args.source_commit or state['rounds'] != args.rounds:
-            parser.error('Existing matrix has different source/rounds; use a new output directory')
-    else:
-        state = {'source_commit': args.source_commit, 'rounds': args.rounds, 'attempts': [],
-                 'protocol': {'play_seconds': 30, 'observe_seconds': 180}}
+    apks = {name: root / path for name, path in {
+        'playback': 'app/build/outputs/apk/debug/app-debug.apk',
+        'direct': 'direct-lock/build/outputs/apk/debug/direct-lock-debug.apk',
+    }.items()}
+    identity = {'source_commit': args.source_commit, 'rounds': args.rounds, 'serial': args.serial,
+                'apk_sha256': {name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in apks.items()}}
+    try:
+        state = checkpoint_state(checkpoint, identity)
+    except ValueError as error:
+        parser.error(str(error))
     def save():
-        checkpoint.write_text(json.dumps(state, indent=2) + '\n')
+        save_checkpoint(checkpoint, state)
     for index, (repetition, scenario) in enumerate(order):
         if any(t['index'] == index and t.get('returncode') == 0 for t in state['attempts']):
             continue
@@ -59,7 +77,9 @@ def main():
                     print('WAITING: unlock the Pixel to start this trial. No lock settings will be changed.', flush=True)
                     waiting = True
                 time.sleep(5)
-        apk = root / ('direct-lock/build/outputs/apk/debug/direct-lock-debug.apk' if scenario.startswith('direct-') else 'app/build/outputs/apk/debug/app-debug.apk')
+        apk = apks['direct' if scenario.startswith('direct-') else 'playback']
+        if hashlib.sha256(apk.read_bytes()).hexdigest() != identity['apk_sha256']['direct' if scenario.startswith('direct-') else 'playback']:
+            parser.error('APK changed during matrix collection; use a new output directory')
         attempt = {'index': index, 'round': repetition, 'scenario': scenario,
                    'start_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
                    'apk_sha256': hashlib.sha256(apk.read_bytes()).hexdigest()}
