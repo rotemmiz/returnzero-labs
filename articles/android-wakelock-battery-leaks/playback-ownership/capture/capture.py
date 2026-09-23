@@ -99,7 +99,7 @@ class Capture:
         for name, command in [
             ('audio-flinger', ['dumpsys', 'media.audio_flinger']), ('audio', ['dumpsys', 'audio']),
             ('power', ['dumpsys', 'power']), ('batterystats', ['dumpsys', 'batterystats', '--charged']),
-            ('processes', ['ps', '-A', '-o', 'UID,PID,NAME']),
+            ('processes', ['ps', '-A', '-o', 'UID,PID,STAT,NAME']),
             ('activity-processes', ['dumpsys', 'activity', 'processes']),
             ('battery', ['dumpsys', 'battery']),
             ('clock', ['sh', '-c', 'date +%s; cat /proc/uptime']),

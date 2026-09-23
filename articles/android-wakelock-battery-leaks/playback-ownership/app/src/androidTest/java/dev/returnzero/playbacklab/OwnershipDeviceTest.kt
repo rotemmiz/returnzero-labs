@@ -121,4 +121,9 @@ class OwnershipDeviceTest {
         }
     }
 
+    @Test fun playbackApkDoesNotRequestDirectWakeLockPermission() {
+        assertEquals(android.content.pm.PackageManager.PERMISSION_DENIED,
+            context.checkSelfPermission(android.Manifest.permission.WAKE_LOCK))
+    }
+
 }

@@ -17,7 +17,7 @@ python3 -m unittest discover -s analysis -p 'test_*.py'
 ./gradlew :app:connectedDebugAndroidTest :direct-lock:connectedDebugAndroidTest
 ```
 
-Connected tests operate the demo apps. Reinstall both APKs afterward if Gradle removes them. Debug APKs alone expose explicit Stop receivers for use behind keyguard. Release builds do not expose those receivers and are not supported by the capture harness.
+Connected tests operate the demo apps. Reinstall both APKs afterward if Gradle removes them. Debug APKs alone expose explicit Stop receivers for use behind keyguard, restricted to callers with the system DUMP permission (including adb shell) or the app itself. Release builds do not expose those receivers and are not supported by the capture harness.
 
 ## Reproduction matrix
 
