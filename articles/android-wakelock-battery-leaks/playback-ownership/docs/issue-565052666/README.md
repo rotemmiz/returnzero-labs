@@ -35,7 +35,7 @@ The direct app has no media playback or foreground service. The playback app has
 
 ## Capture protocol
 
-Choose the serial from `adb devices -l`. Unlock the Pixel before each non-idle trial, disconnect charging, and keep audio route and volume fixed. Do not change battery optimization, Doze, app-ops, or system logging between trials. Close other intentional media yourself before starting a quiet comparison.
+Choose the serial from `adb devices -l`. Unlock the Pixel before every trial, including idle, disconnect charging, and keep audio route and volume fixed. Do not change battery optimization, Doze, app-ops, or system logging between trials. Close other intentional media yourself before starting a quiet comparison.
 
 ```sh
 python3 capture/capture.py --serial SERIAL --scenario paused \
@@ -46,7 +46,7 @@ python3 capture/capture.py --serial SERIAL --scenario paused \
 
 The direct scenarios select `dev.returnzero.directlocklab` automatically and use the direct APK. An optional `--package` must match the scenario. `--apk` checks its SHA-256 against the installed package. `--source-commit` is a recorded build-provenance assertion, not independent proof; retain the build record and use a clean committed source revision.
 
-For the complete matrix, the runner rotates the scenario order, waits for manual unlock between non-idle trials, and checkpoints each attempt. Rerun the identical command to resume after an interruption; failed attempts remain recorded.
+For the complete matrix, the runner rotates the scenario order, waits for manual unlock between trials, and checkpoints each attempt. Rerun the identical command to resume after an interruption; failed attempts remain recorded.
 
 ```sh
 python3 capture/matrix.py --serial SERIAL --source-commit COMMIT \

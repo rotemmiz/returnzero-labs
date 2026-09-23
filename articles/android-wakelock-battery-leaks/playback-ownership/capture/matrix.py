@@ -65,18 +65,17 @@ def main():
         if any(t['index'] == index and t.get('returncode') == 0 for t in state['attempts']):
             continue
         print(f'Trial {index + 1}/{len(order)}: round {repetition}, {scenario}', flush=True)
-        if scenario != 'idle':
-            subprocess.run(['adb', '-s', args.serial, 'shell', 'input', 'keyevent', 'KEYCODE_WAKEUP'], check=True)
-            waiting = False
-            while True:
-                result = subprocess.run(['adb', '-s', args.serial, 'shell', 'dumpsys', 'window', 'policy'],
-                                        capture_output=True, text=True, check=True)
-                if not re.search(r'(?:mShowingLockscreen|isStatusBarKeyguard|showing|isKeyguardShowing)=true', result.stdout):
-                    break
-                if not waiting:
-                    print('WAITING: unlock the Pixel to start this trial. No lock settings will be changed.', flush=True)
-                    waiting = True
-                time.sleep(5)
+        subprocess.run(['adb', '-s', args.serial, 'shell', 'input', 'keyevent', 'KEYCODE_WAKEUP'], check=True)
+        waiting = False
+        while True:
+            result = subprocess.run(['adb', '-s', args.serial, 'shell', 'dumpsys', 'window', 'policy'],
+                                    capture_output=True, text=True, check=True)
+            if not re.search(r'(?:mShowingLockscreen|isStatusBarKeyguard|showing|isKeyguardShowing)=true', result.stdout):
+                break
+            if not waiting:
+                print('WAITING: unlock the Pixel to start this trial. No lock settings will be changed.', flush=True)
+                waiting = True
+            time.sleep(5)
         apk = apks['direct' if scenario.startswith('direct-') else 'playback']
         if hashlib.sha256(apk.read_bytes()).hexdigest() != identity['apk_sha256']['direct' if scenario.startswith('direct-') else 'playback']:
             parser.error('APK changed during matrix collection; use a new output directory')

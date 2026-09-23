@@ -27,6 +27,8 @@ class CaptureTests(unittest.TestCase):
             calls.append(command)
             if command[:5] == ('shell', 'cmd', 'package', 'list', 'packages'):
                 return f'package:{runner.package} uid:10123'
+            if command == ('shell', 'dumpsys', 'power'):
+                return 'POWER MANAGER (dumpsys power)\n  mWakefulness=Awake\n  mWakefulnessChanging=false\n'
             if command[0] == 'exec-out':
                 active = {'event': 'wake_lock_acquired', 'is_held': True} if runner.args.scenario.startswith('direct-') else {'event': 'is_playing', 'is_playing': True}
                 return '\n'.join(json.dumps(dict(event, run_id=runner.run_id)) for event in [{'event': 'run_start'}, active])
@@ -69,6 +71,31 @@ class CaptureTests(unittest.TestCase):
             marks = [entry['boundary'] for entry in runner.manifest['boundaries']]
             self.assertLess(marks.index('quiet-screen-off-start'), marks.index('quiet-screen-off-end'))
             self.assertTrue((runner.directory / 'artifact-index.json').exists())
+
+    def test_idle_invokes_unlock_guard(self):
+        with tempfile.TemporaryDirectory() as root:
+            runner = self.make_capture(root, 'idle')
+            with patch.object(runner, 'unlocked') as unlocked:
+                self.run_mock(runner)
+            unlocked.assert_called_once_with()
+
+    def test_setup_power_rejects_dozing_and_unknown(self):
+        for text in ['  mWakefulness=Dozing\n', '  mWakefulness=Asleep\n', '',
+                     '  mWakefulnessChanging=false\n']:
+            with self.subTest(text=text), tempfile.TemporaryDirectory() as root:
+                runner = self.make_capture(root, 'idle')
+                (runner.private / 'play-end-power.txt').write_text(text)
+                with self.assertRaisesRegex(RuntimeError, 'expected Awake'):
+                    runner.validate_setup_power()
+                self.assertFalse(runner.manifest['setup_power_verified'])
+
+    def test_setup_power_accepts_awake(self):
+        with tempfile.TemporaryDirectory() as root:
+            runner = self.make_capture(root, 'idle')
+            (runner.private / 'play-end-power.txt').write_text('POWER MANAGER (dumpsys power)\n  mWakefulness=Awake\n')
+            runner.validate_setup_power()
+            self.assertTrue(runner.manifest['setup_power_verified'])
+            self.assertEqual(runner.manifest['setup_wakefulness'], 'Awake')
 
     def test_direct_routes_commands_and_preserves_pre_cleanup_events(self):
         with tempfile.TemporaryDirectory() as root:

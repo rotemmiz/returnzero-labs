@@ -224,6 +224,19 @@ class Capture:
         if not self.manifest['start_verified']:
             raise RuntimeError('Current-run startup events missing or inactive: cannot establish active playback/lock acquisition before Home')
 
+    def validate_setup_power(self):
+        path = self.private / 'play-end-power.txt'
+        text = path.read_text() if path.exists() else ''
+        match = re.search(r'^\s*mWakefulness=(\w+)\s*$', text, re.M)
+        state = match.group(1) if match else 'unknown'
+        self.manifest['setup_wakefulness'] = state
+        self.manifest['setup_power_verified'] = state == 'Awake'
+        self.save()
+        if state != 'Awake':
+            raise RuntimeError(f'Active setup ended with wakefulness {state}, expected Awake; '
+                               'screen may have slept before the controlled Home/screen-off transition. '
+                               'Unlock the phone and repeat this trial.')
+
     def provenance(self):
         checkout = Path(__file__).resolve().parents[1]
         for key, command in [('source_checkout_head', ['rev-parse', 'HEAD']),
@@ -306,8 +319,7 @@ class Capture:
         try:
             self.adb('get-state')
             self.adb('shell', 'input', 'keyevent', 'KEYCODE_WAKEUP')
-            if self.args.scenario != 'idle':
-                self.unlocked()
+            self.unlocked()
             uid_text = self.adb('shell', 'cmd', 'package', 'list', 'packages', '-U', self.package)
             match = re.search(rf'package:{re.escape(self.package)}\s+uid:(\d+)', uid_text)
             if not match:
@@ -335,6 +347,7 @@ class Capture:
             time.sleep(self.args.play_seconds)
             self.validate_started()
             self.snapshots('play-end')
+            self.validate_setup_power()
             self.adb('shell', 'input', 'keyevent', 'KEYCODE_HOME')
             self.adb('shell', 'input', 'keyevent', 'KEYCODE_SLEEP')
             self.mark('quiet-screen-off-start')
