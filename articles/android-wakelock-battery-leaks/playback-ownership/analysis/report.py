@@ -102,13 +102,16 @@ def generate(directory):
     if isinstance(uid, int):
         for path in sorted((directory / 'private').glob('*-batterystats.txt')):
             snapshots[path.stem.removesuffix('-batterystats')] = audiomix_summary(path.read_text(), uid)
+    app_events = summarize_events(events)
+    if manifest['scenario'] == 'idle' or manifest['scenario'].startswith('direct-'):
+        app_events['app_owner_evidence'] = 'not_applicable_no_players_in_this_scenario'
     report = {'run_id': manifest['run_id'], 'scenario': manifest['scenario'],
-              'status': manifest.get('status'), 'app_events': summarize_events(events),
+              'status': manifest.get('status'), 'app_events': app_events,
               'malformed_event_lines': malformed, 'attribution_snapshots': snapshots,
               'device_cleanup': 'inconclusive: correlate audio, attribution and suspend trace manually',
               'causality': 'No automatic causal or battery-life conclusion. A release record describes app code; an attribution timer does not establish effective suspend blocking.',
               'limitations': ['Raw system snapshots and traces are private.',
-                              'The initial idle baseline is screen-on; it is not a matched screen-off suspend baseline.',
+                              'The initial baseline is screen-on; only the idle scenario provides a matched screen-off control.',
                               'Trace markers and clock alignment must be verified in Perfetto.',
                               'No trace-level absence, data-loss, or suspend inference is performed by this summary.']}
     (directory / 'report.json').write_text(json.dumps(report, indent=2) + '\n')
