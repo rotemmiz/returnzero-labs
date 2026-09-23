@@ -41,6 +41,16 @@ class DirectLockDeviceTest {
                 .setClassName(context.packageName, "dev.returnzero.directlocklab.StopReceiver"))
             InstrumentationRegistry.getInstrumentation().waitForIdleSync()
             assertTrue(events(run).any { it.optString("event") == "run_stop" && it.optString("reason") == "explicit_stop" })
+            screen.moveToState(Lifecycle.State.RESUMED)
+            screen.onActivity {
+                val texts = mutableListOf<String>()
+                fun collect(view: android.view.View) {
+                    if (view is android.widget.TextView) texts.add(view.text.toString())
+                    if (view is android.view.ViewGroup) for (i in 0 until view.childCount) collect(view.getChildAt(i))
+                }
+                collect(it.window.decorView)
+                assertTrue(texts.contains("Stopped: explicit_stop"))
+            }
         }
     }
     @Test fun nativeTimedAcquisitionExpires() {
