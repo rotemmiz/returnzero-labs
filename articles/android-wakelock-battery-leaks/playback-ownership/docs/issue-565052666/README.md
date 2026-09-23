@@ -2,6 +2,12 @@
 
 This package investigates [issue 565052666](https://issuetracker.google.com/issues/565052666) with two independent apps. A Media3 app examines AudioMix attribution and playback ownership. A separate app deliberately acquires a partial wake lock, with either no acquisition timeout or a 60-second timeout. These experiments do not reproduce proprietary application internals.
 
+## Question under test
+
+The primary question is whether Android intervenes when an app deliberately refuses to release a wake lock or its playback owner. The retained-playback and untimed direct-lock scenarios are intentional misuse probes. Successful explicit cleanup is a control, not the outcome being sought. Inspect whether the system disables the lock, freezes or kills the process, stops audio, or restricts the app before any sample deadline or harness cleanup. Record the observed mechanism separately from an inferred cause.
+
+Device enforcement and Google Play penalties are separate outcomes. Google documents excessive non-exempt partial locks held for at least two hours in 24 hours, affecting more than 5% of sessions averaged over 28 days; audio-created locks are exempt from that calculation. A sideloaded three-minute demo cannot establish whether Play penalizes an app. See [Google’s metric and policy description](https://developer.android.com/blog/posts/optimize-your-app-battery-using-android-vitals-wake-lock-metric).
+
 ## Build and install
 
 From the playback-ownership directory, use JDK 17 and the existing pinned Android toolchain:

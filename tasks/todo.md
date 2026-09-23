@@ -10,3 +10,5 @@
 No Google submission or Drive sharing. No indefinite-duration or commercial-app reproduction claim.
 
 Source review and final APK validation passed. Corrected full matrix waits for a manually unlocked Pixel; locked-start controls are excluded.
+
+User clarification: primary outcome is Android intervention against deliberate refusal to release, not successful app cleanup. First retained and extra untimed-direct trials collected; independent evidence review underway. Untimed lock was disabled by PowerManager before cleanup; finite observation only. Full matrix and demonstrations remain incomplete.
