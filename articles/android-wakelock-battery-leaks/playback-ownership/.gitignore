@@ -1,3 +1,9 @@
+.gradle/
+.kotlin/
+**/build/
+local.properties
+captures/
+*.hprof
 __pycache__/
 *.pyc
 *.pftrace
